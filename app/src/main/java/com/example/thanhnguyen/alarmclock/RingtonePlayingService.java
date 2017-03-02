@@ -35,31 +35,30 @@ public class RingtonePlayingService extends Service {
                 break;
         }
 
-
-
         if (!this.isPlaying && this.startId == 1) {
-            mediaPlayer = MediaPlayer.create(this,R.raw.BluestoneArray);
+            mediaPlayer = MediaPlayer.create(this, R.raw.bluestone);
             mediaPlayer.start();
             this.isPlaying = true;
             this.startId = 0;
-        }else if (this.isPlaying && this.startId == 0) {
+        } else if (this.isPlaying && this.startId == 0) {
 
             mediaPlayer.stop();
             mediaPlayer.reset();
             this.isPlaying = false;
             this.startId = 0;
-
-        } else if (!this.isPlaying && this.startId == 0) {
-            this.isPlaying = false;
-            this.startId = 0;
-
-        } else if (this.isPlaying && this.startId == 1) {
-            this.isPlaying = false;
-            this.startId = 0;
-
-        } else {
-
         }
+
+//        } else if (!this.isPlaying && this.startId == 0) {
+//            this.isPlaying = false;
+//            this.startId = 0;
+//
+//        } else if (this.isPlaying && this.startId == 1) {
+//            this.isPlaying = false;
+//            this.startId = 0;
+//
+//        } else {
+//
+//        }
 
         return START_NOT_STICKY;
     }

@@ -21,34 +21,37 @@ public class MainActivity extends AppCompatActivity {
     PendingIntent pendingIntent;
     String hourString;
     String minString;
+    Button alarmOn;
+    Button alarmOff;
+    long newerTime;
+    long olderTime;
+    long goesOffTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.context = this;
 
-        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-
-        alarmTimePicker = (TimePicker) findViewById(R.id.timePicker);
-
-        updateStatus = (TextView) findViewById(R.id.updateStatus);
+        initUI();
+        initServices();
 
         final Calendar calendar = Calendar.getInstance();
-
-        Button alarmOn = (Button) findViewById(R.id.alarmOn);
-
-        final Intent alarmIntend = new Intent(this.context,AlarmReceiver.class);
+        final Calendar now = Calendar.getInstance();
+        olderTime = now.getTimeInMillis();
+        final Intent alarmIntend = new Intent(this.context, AlarmReceiver.class);
 
         alarmOn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                int hourAlarm =  alarmTimePicker.getHour();
+                int hourAlarm = alarmTimePicker.getHour();
                 int minAlarm = alarmTimePicker.getMinute();
 
-                calendar.set(Calendar.HOUR_OF_DAY,hourAlarm);
+                calendar.set(Calendar.HOUR_OF_DAY, hourAlarm);
                 calendar.set(Calendar.MINUTE, minAlarm);
+
+                hourString = String.valueOf(hourAlarm);
+                minString = String.valueOf(minAlarm);
 
                 if (hourAlarm > 12) {
                     hourString = String.valueOf(hourAlarm - 12);
@@ -58,17 +61,27 @@ public class MainActivity extends AppCompatActivity {
                     minString = "0" + String.valueOf(minAlarm);
                 }
 
-                setAlarmText("Alarm set to " + hourString + ":" + minString);
+                newerTime = calendar.getTimeInMillis();
 
-                alarmIntend.putExtra("extra", "alarm on");
+                if(newerTime < olderTime) {
+                    updateStatus.setText("Current time is in the past. Please set another time");
+                }
+                else {
+                    goesOffTime = calendar.getTimeInMillis();
+                    setAlarmText("Alarm set to " + hourString + ":" + minString);
+                    alarmIntend.putExtra("extra", "alarm on");
+                    pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, goesOffTime, pendingIntent);
+                    alarmOn.setEnabled(false);
+                    alarmOff.setEnabled(true);
+                    alarmTimePicker.setEnabled(false);
 
-                pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
+                }
 
-                alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),pendingIntent);
             }
         });
 
-        Button alarmOff = (Button) findViewById(R.id.alarmOff);
+
         alarmOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -78,13 +91,29 @@ public class MainActivity extends AppCompatActivity {
 
                 alarmManager.cancel(pendingIntent);
                 sendBroadcast(alarmIntend);
+
+                alarmOn.setEnabled(true);
+                alarmOff.setEnabled(false);
+                alarmTimePicker.setEnabled(true);
             }
         });
 
-
     }
 
-    public void setAlarmText(String text){
+    private void initUI() {
+        this.context = this;
+        alarmTimePicker = (TimePicker) findViewById(R.id.timePicker);
+        alarmOn = (Button) findViewById(R.id.alarmOn);
+        alarmOff = (Button) findViewById(R.id.alarmOff);
+        alarmOff.setEnabled(false);
+        updateStatus = (TextView) findViewById(R.id.updateStatus);
+    }
+
+    private void initServices() {
+        alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+    }
+
+    public void setAlarmText(String text) {
         updateStatus.setText(text);
     }
 }
