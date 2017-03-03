@@ -1,8 +1,5 @@
 package com.example.thanhnguyen.alarmclock.Service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -10,7 +7,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.example.thanhnguyen.alarmclock.Constant.Constant;
-import com.example.thanhnguyen.alarmclock.Activity.MainActivity;
 import com.example.thanhnguyen.alarmclock.R;
 
 /**
@@ -19,8 +15,8 @@ import com.example.thanhnguyen.alarmclock.R;
 public class RingtonePlayingService extends Service {
 
     MediaPlayer mediaPlayer;
-//    int startId;
-    boolean isPlaying;
+    boolean isPlaying = false;
+    int startId;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -29,28 +25,29 @@ public class RingtonePlayingService extends Service {
         String state = intent.getExtras().getString(Constant.KEY_EXTRA_INTENT);
 
         assert state != null;
-//        switch (state) {
-//            case Constant.VALUE_EXTRA_INTENT_ALARM_ON:
-//                this.startId = 1;
-//                break;
-//            case Constant.VALUE_EXTRA_INTENT_ALARM_OFF:
-//                this.startId = 0;
-//                break;
-//            default:
-//                this.startId = 0;
-//                break;
-//        }
+        switch (state) {
+            case Constant.VALUE_EXTRA_INTENT_ALARM_ON:
+                this.startId = 1;
+                break;
+            case Constant.VALUE_EXTRA_INTENT_ALARM_OFF:
+                this.startId = 0;
+                break;
+            default:
+                this.startId = 0;
+                break;
+        }
 
-        if (!this.isPlaying) {
+        if (!this.isPlaying && this.startId == 1) {
             mediaPlayer = MediaPlayer.create(this, R.raw.alarm1);
             mediaPlayer.start();
             this.isPlaying = true;
+            this.startId = 0;
 
-        } else if (this.isPlaying) {
+        } else if (this.isPlaying && this.startId == 0) {
             mediaPlayer.stop();
             mediaPlayer.reset();
             this.isPlaying = false;
-         //   this.startId = 0;
+            this.startId = 0;
         }
 
         return START_NOT_STICKY;

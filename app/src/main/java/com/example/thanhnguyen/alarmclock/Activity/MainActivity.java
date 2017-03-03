@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.icu.util.Calendar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -17,8 +18,6 @@ import com.example.thanhnguyen.alarmclock.R;
 import com.example.thanhnguyen.alarmclock.Receiver.AlarmReceiver;
 
 import java.util.ArrayList;
-import java.util.Random;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -36,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> alarmListString = new ArrayList<>();
     private ArrayList<Long>  goOffTimeList = new ArrayList<>();
     private ArrayList<PendingIntent> pendingIntents = new ArrayList<>();
-    private Random randomRequestCode = new Random();
+    private int requestCode = 0;
+    private int pendingIntentId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,15 +87,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                     String mynewstring = result.toString();
                     setAlarmText(mynewstring);
-                    alarmOff.setEnabled(true);
+                   // alarmOff.setEnabled(true);
 
                 }
 
-                for(Long time: goOffTimeList){
+
+                for (int i = 0; i < goOffTimeList.size(); i++) {
                     alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
-                    pendingIntent = PendingIntent.getBroadcast(context, randomRequestCode.nextInt(), alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+                    pendingIntent = PendingIntent.getBroadcast(context, requestCode, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, goOffTimeList.get(i), pendingIntent);
                     pendingIntents.add(pendingIntent);
+                    requestCode++;
                 }
 
             }
@@ -108,18 +110,10 @@ public class MainActivity extends AppCompatActivity {
                 setAlarmText(Constant.STRING_ALARM_IS_OFF);
                 alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_OFF);
 
-                if(pendingIntents.size()>0){
-                    for(int i=0; i<pendingIntents.size(); i++){
-                        alarmManager.cancel(pendingIntents.get(i));
-                    }
-                    pendingIntents.clear();
-                    sendBroadcast(alarmIntend);
-                }
-
-
-//                alarmOn.setEnabled(true);
-//                alarmOff.setEnabled(false);
-//                alarmTimePicker.setEnabled(true);
+                alarmManager.cancel(pendingIntents.get(pendingIntentId));
+                Log.i("Cancel PI", "PI id is" + pendingIntentId);
+                sendBroadcast(alarmIntend);
+                pendingIntentId++;
             }
         });
 
@@ -130,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         alarmTimePicker = (TimePicker) findViewById(R.id.timePicker);
         alarmOn = (Button) findViewById(R.id.alarmOn);
         alarmOff = (Button) findViewById(R.id.alarmOff);
-        alarmOff.setEnabled(false);
         updateStatus = (TextView) findViewById(R.id.updateStatus);
     }
 
