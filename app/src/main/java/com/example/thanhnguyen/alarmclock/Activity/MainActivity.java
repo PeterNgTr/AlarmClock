@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.icu.util.Calendar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -15,6 +16,8 @@ import android.widget.TimePicker;
 import com.example.thanhnguyen.alarmclock.Constant.Constant;
 import com.example.thanhnguyen.alarmclock.R;
 import com.example.thanhnguyen.alarmclock.Receiver.AlarmReceiver;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,6 +32,11 @@ public class MainActivity extends AppCompatActivity {
     private Button alarmOff;
     private long goOffTime;
     private long olderTime;
+    private ArrayList<String> alarmListString = new ArrayList<>();
+    private ArrayList<Long>  goOffTimeList = new ArrayList<>();
+    private ArrayList<PendingIntent> pendingIntents = new ArrayList<>();
+    private int requestCode = 0;
+    private int pendingIntentId = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +78,26 @@ public class MainActivity extends AppCompatActivity {
                     updateStatus.setText(Constant.STRING_TIME_SET_IN_THE_PAST);
                 }
                 else {
-                    setAlarmText(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
-                    alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
-                    pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, goOffTime, pendingIntent);
-                    alarmOn.setEnabled(false);
-                    alarmOff.setEnabled(true);
-                    alarmTimePicker.setEnabled(false);
+                    alarmListString.add(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
+                    goOffTimeList.add(goOffTime);
 
+                    StringBuffer result = new StringBuffer();
+                    for (int i = 0; i < alarmListString.size(); i++) {
+                        result.append( alarmListString.get(i) + '\n' );
+                    }
+                    String mynewstring = result.toString();
+                    setAlarmText(mynewstring);
+                   // alarmOff.setEnabled(true);
+
+                }
+
+
+                for (int i = 0; i < goOffTimeList.size(); i++) {
+                    alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
+                    pendingIntent = PendingIntent.getBroadcast(context, requestCode, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, goOffTimeList.get(i), pendingIntent);
+                    pendingIntents.add(pendingIntent);
+                    requestCode++;
                 }
 
             }
@@ -88,15 +108,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 setAlarmText(Constant.STRING_ALARM_IS_OFF);
-
                 alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_OFF);
 
-                alarmManager.cancel(pendingIntent);
+                alarmManager.cancel(pendingIntents.get(pendingIntentId));
+                Log.i("Cancel PI", "PI id is" + pendingIntentId);
                 sendBroadcast(alarmIntend);
-
-                alarmOn.setEnabled(true);
-                alarmOff.setEnabled(false);
-                alarmTimePicker.setEnabled(true);
+                pendingIntentId++;
             }
         });
 
@@ -107,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
         alarmTimePicker = (TimePicker) findViewById(R.id.timePicker);
         alarmOn = (Button) findViewById(R.id.alarmOn);
         alarmOff = (Button) findViewById(R.id.alarmOff);
-        alarmOff.setEnabled(false);
         updateStatus = (TextView) findViewById(R.id.updateStatus);
     }
 
