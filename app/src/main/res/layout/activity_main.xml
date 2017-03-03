@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.example.thanhnguyen.alarmclock.MainActivity">
+    tools:context=".Activity.MainActivity">
 
     <TimePicker
         android:id="@+id/timePicker"
@@ -41,7 +41,6 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Have you set the alarm yet?"
         android:id="@+id/updateStatus"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="27dp" />
+        android:layout_below="@+id/alarmOn"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
