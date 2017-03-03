@@ -19,7 +19,7 @@ import com.example.thanhnguyen.alarmclock.R;
 public class RingtonePlayingService extends Service {
 
     MediaPlayer mediaPlayer;
-    int startId;
+//    int startId;
     boolean isPlaying;
 
     @Override
@@ -29,46 +29,28 @@ public class RingtonePlayingService extends Service {
         String state = intent.getExtras().getString(Constant.KEY_EXTRA_INTENT);
 
         assert state != null;
-        switch (state) {
-            case Constant.VALUE_EXTRA_INTENT_ALARM_ON:
-                this.startId = 1;
-                break;
-            case Constant.VALUE_EXTRA_INTENT_ALARM_OFF:
-                this.startId = 0;
-                break;
-            default:
-                this.startId = 0;
-                break;
-        }
+//        switch (state) {
+//            case Constant.VALUE_EXTRA_INTENT_ALARM_ON:
+//                this.startId = 1;
+//                break;
+//            case Constant.VALUE_EXTRA_INTENT_ALARM_OFF:
+//                this.startId = 0;
+//                break;
+//            default:
+//                this.startId = 0;
+//                break;
+//        }
 
-        if (!this.isPlaying && this.startId == 1) {
-            mediaPlayer = MediaPlayer.create(this, R.raw.bluestone);
+        if (!this.isPlaying) {
+            mediaPlayer = MediaPlayer.create(this, R.raw.alarm1);
             mediaPlayer.start();
             this.isPlaying = true;
-            this.startId = 0;
 
-            NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-            Intent intentMainActivity = new Intent(this.getApplicationContext(), MainActivity.class);
-
-            PendingIntent pendingIntentMainActivity = PendingIntent.getActivity(this,0,intentMainActivity,0);
-
-            Notification notifyPopup = new Notification.Builder(this)
-                    .setContentTitle("An alarm is going off!")
-                    .setContentText("Click me!")
-                    .setContentIntent(pendingIntentMainActivity)
-                    .setAutoCancel(true)
-                    .setSmallIcon(R.drawable.notifyicon)
-                    .build();
-
-            notificationManager.notify(0, notifyPopup);
-
-        } else if (this.isPlaying && this.startId == 0) {
-
+        } else if (this.isPlaying) {
             mediaPlayer.stop();
             mediaPlayer.reset();
             this.isPlaying = false;
-            this.startId = 0;
+         //   this.startId = 0;
         }
 
         return START_NOT_STICKY;
@@ -76,7 +58,6 @@ public class RingtonePlayingService extends Service {
 
     @Override
     public void onDestroy() {
-
         super.onDestroy();
         this.isPlaying = false;
     }

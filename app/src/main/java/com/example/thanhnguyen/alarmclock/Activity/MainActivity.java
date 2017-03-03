@@ -16,6 +16,10 @@ import com.example.thanhnguyen.alarmclock.Constant.Constant;
 import com.example.thanhnguyen.alarmclock.R;
 import com.example.thanhnguyen.alarmclock.Receiver.AlarmReceiver;
 
+import java.util.ArrayList;
+import java.util.Random;
+
+
 public class MainActivity extends AppCompatActivity {
 
     private AlarmManager alarmManager;
@@ -29,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private Button alarmOff;
     private long goOffTime;
     private long olderTime;
+    private ArrayList<String> alarmListString = new ArrayList<>();
+    private ArrayList<Long>  goOffTimeList = new ArrayList<>();
+    private ArrayList<PendingIntent> pendingIntents = new ArrayList<>();
+    private Random randomRequestCode = new Random();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,14 +78,24 @@ public class MainActivity extends AppCompatActivity {
                     updateStatus.setText(Constant.STRING_TIME_SET_IN_THE_PAST);
                 }
                 else {
-                    setAlarmText(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
-                    alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
-                    pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, goOffTime, pendingIntent);
-                    alarmOn.setEnabled(false);
-                    alarmOff.setEnabled(true);
-                    alarmTimePicker.setEnabled(false);
+                    alarmListString.add(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
+                    goOffTimeList.add(goOffTime);
 
+                    StringBuffer result = new StringBuffer();
+                    for (int i = 0; i < alarmListString.size(); i++) {
+                        result.append( alarmListString.get(i) + '\n' );
+                    }
+                    String mynewstring = result.toString();
+                    setAlarmText(mynewstring);
+                    alarmOff.setEnabled(true);
+
+                }
+
+                for(Long time: goOffTimeList){
+                    alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
+                    pendingIntent = PendingIntent.getBroadcast(context, randomRequestCode.nextInt(), alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);
+                    pendingIntents.add(pendingIntent);
                 }
 
             }
@@ -88,15 +106,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 setAlarmText(Constant.STRING_ALARM_IS_OFF);
-
                 alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_OFF);
 
-                alarmManager.cancel(pendingIntent);
-                sendBroadcast(alarmIntend);
+                if(pendingIntents.size()>0){
+                    for(int i=0; i<pendingIntents.size(); i++){
+                        alarmManager.cancel(pendingIntents.get(i));
+                    }
+                    pendingIntents.clear();
+                    sendBroadcast(alarmIntend);
+                }
 
-                alarmOn.setEnabled(true);
-                alarmOff.setEnabled(false);
-                alarmTimePicker.setEnabled(true);
+
+//                alarmOn.setEnabled(true);
+//                alarmOff.setEnabled(false);
+//                alarmTimePicker.setEnabled(true);
             }
         });
 
