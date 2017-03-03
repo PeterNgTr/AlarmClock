@@ -1,4 +1,4 @@
-package com.example.thanhnguyen.alarmclock;
+package com.example.thanhnguyen.alarmclock.Service;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.IBinder;
 import android.util.Log;
+
+import com.example.thanhnguyen.alarmclock.Constant.Constant;
+import com.example.thanhnguyen.alarmclock.Activity.MainActivity;
+import com.example.thanhnguyen.alarmclock.R;
 
 /**
  * Created by thanhnguyen on 3/1/17.
@@ -22,14 +26,14 @@ public class RingtonePlayingService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i("LocalService", "Received start id " + startId + ": " + intent);
 
-        String state = intent.getExtras().getString("extra");
+        String state = intent.getExtras().getString(Constant.KEY_EXTRA_INTENT);
 
         assert state != null;
         switch (state) {
-            case "alarm on":
+            case Constant.VALUE_EXTRA_INTENT_ALARM_ON:
                 this.startId = 1;
                 break;
-            case "alarm off":
+            case Constant.VALUE_EXTRA_INTENT_ALARM_OFF:
                 this.startId = 0;
                 break;
             default:
@@ -66,18 +70,6 @@ public class RingtonePlayingService extends Service {
             this.isPlaying = false;
             this.startId = 0;
         }
-
-//        } else if (!this.isPlaying && this.startId == 0) {
-//            this.isPlaying = false;
-//            this.startId = 0;
-//
-//        } else if (this.isPlaying && this.startId == 1) {
-//            this.isPlaying = false;
-//            this.startId = 0;
-//
-//        } else {
-//
-//        }
 
         return START_NOT_STICKY;
     }

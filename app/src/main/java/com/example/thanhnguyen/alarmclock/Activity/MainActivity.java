@@ -1,4 +1,4 @@
-package com.example.thanhnguyen.alarmclock;
+package com.example.thanhnguyen.alarmclock.Activity;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -12,20 +12,23 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.example.thanhnguyen.alarmclock.Constant.Constant;
+import com.example.thanhnguyen.alarmclock.R;
+import com.example.thanhnguyen.alarmclock.Receiver.AlarmReceiver;
+
 public class MainActivity extends AppCompatActivity {
 
-    AlarmManager alarmManager;
-    TimePicker alarmTimePicker;
-    TextView updateStatus;
-    Context context;
-    PendingIntent pendingIntent;
-    String hourString;
-    String minString;
-    Button alarmOn;
-    Button alarmOff;
-    long newerTime;
-    long olderTime;
-    long goesOffTime;
+    private AlarmManager alarmManager;
+    private TimePicker alarmTimePicker;
+    private TextView updateStatus;
+    private Context context;
+    private PendingIntent pendingIntent;
+    private String hourString;
+    private String minString;
+    private Button alarmOn;
+    private Button alarmOff;
+    private long goOffTime;
+    private long olderTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,17 +64,16 @@ public class MainActivity extends AppCompatActivity {
                     minString = "0" + String.valueOf(minAlarm);
                 }
 
-                newerTime = calendar.getTimeInMillis();
+                goOffTime = calendar.getTimeInMillis();
 
-                if(newerTime < olderTime) {
-                    updateStatus.setText("Current time is in the past. Please set another time");
+                if(goOffTime < olderTime) {
+                    updateStatus.setText(Constant.STRING_TIME_SET_IN_THE_PAST);
                 }
                 else {
-                    goesOffTime = calendar.getTimeInMillis();
-                    setAlarmText("Alarm set to " + hourString + ":" + minString);
-                    alarmIntend.putExtra("extra", "alarm on");
+                    setAlarmText(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
+                    alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_ON);
                     pendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntend, PendingIntent.FLAG_UPDATE_CURRENT);
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, goesOffTime, pendingIntent);
+                    alarmManager.set(AlarmManager.RTC_WAKEUP, goOffTime, pendingIntent);
                     alarmOn.setEnabled(false);
                     alarmOff.setEnabled(true);
                     alarmTimePicker.setEnabled(false);
@@ -85,9 +87,9 @@ public class MainActivity extends AppCompatActivity {
         alarmOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setAlarmText("Alarm off!");
+                setAlarmText(Constant.STRING_ALARM_IS_OFF);
 
-                alarmIntend.putExtra("extra", "alarm off");
+                alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_OFF);
 
                 alarmManager.cancel(pendingIntent);
                 sendBroadcast(alarmIntend);
@@ -113,7 +115,8 @@ public class MainActivity extends AppCompatActivity {
         alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
     }
 
-    public void setAlarmText(String text) {
+    private void setAlarmText(String text) {
         updateStatus.setText(text);
     }
+
 }
