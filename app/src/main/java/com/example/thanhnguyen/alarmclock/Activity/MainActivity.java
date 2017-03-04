@@ -9,9 +9,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.thanhnguyen.alarmclock.Constant.Constant;
 import com.example.thanhnguyen.alarmclock.R;
@@ -30,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private String minString;
     private Button alarmOn;
     private Button alarmOff;
+    private ListView alarmsList;
     private long goOffTime;
     private long olderTime;
     private ArrayList<String> alarmListString = new ArrayList<>();
@@ -81,14 +85,13 @@ public class MainActivity extends AppCompatActivity {
                     alarmListString.add(Constant.STRING_ALARM_IS_SET + hourString + Constant.STRING_COLON + minString);
                     goOffTimeList.add(goOffTime);
 
-                    StringBuffer result = new StringBuffer();
-                    for (int i = 0; i < alarmListString.size(); i++) {
-                        result.append( alarmListString.get(i) + '\n' );
+                    if (alarmListString.size() <= 0) {
+                        setAlarmText(Constant.STRING_NO_ALARM_IS_SET);
+                    } else {
+                        setAlarmText(Constant.STRING_BLANK);
+                        ArrayAdapter adapter = new ArrayAdapter<>(MainActivity.this, R.layout.activity_listview, alarmListString);
+                        alarmsList.setAdapter(adapter);
                     }
-                    String mynewstring = result.toString();
-                    setAlarmText(mynewstring);
-                   // alarmOff.setEnabled(true);
-
                 }
 
 
@@ -107,13 +110,22 @@ public class MainActivity extends AppCompatActivity {
         alarmOff.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setAlarmText(Constant.STRING_ALARM_IS_OFF);
+                Toast.makeText(MainActivity.this, Constant.STRING_ALARM_IS_OFF, Toast.LENGTH_SHORT).show();
                 alarmIntend.putExtra(Constant.KEY_EXTRA_INTENT, Constant.VALUE_EXTRA_INTENT_ALARM_OFF);
 
                 alarmManager.cancel(pendingIntents.get(pendingIntentId));
                 Log.i("Cancel PI", "PI id is" + pendingIntentId);
                 sendBroadcast(alarmIntend);
-                pendingIntentId++;
+
+                if (alarmListString.size() >= 1){
+                    alarmListString.remove(0);
+                    ArrayAdapter adapter = new ArrayAdapter<>(MainActivity.this, R.layout.activity_listview, alarmListString);
+                    alarmsList.setAdapter(adapter);
+                    pendingIntentId++;
+                } else {
+                    setAlarmText(Constant.STRING_NO_ALARM_IS_SET);
+                }
+
             }
         });
 
@@ -125,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
         alarmOn = (Button) findViewById(R.id.alarmOn);
         alarmOff = (Button) findViewById(R.id.alarmOff);
         updateStatus = (TextView) findViewById(R.id.updateStatus);
+        alarmsList = (ListView) findViewById(R.id.alarmsList);
     }
 
     private void initServices() {
